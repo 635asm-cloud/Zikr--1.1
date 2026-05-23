@@ -1,1 +1,1 @@
-ZEKR
+Zikr
