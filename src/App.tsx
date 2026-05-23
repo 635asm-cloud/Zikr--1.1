@@ -3218,7 +3218,7 @@ function App() {
             </button>
 
             <div className={`transition-opacity duration-200 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
-              <div className="text-center mb-6 mt-4 space-y-4">
+              <div className="text-center mb-6 mt-4 space-y-4" dir="rtl" style={{ direction: 'rtl' }}>
                 {formatZikrArabicDisplayLines(currentZikr.arabic).map((line, index) => (
                   <p
                     key={`${line.slice(0, 12)}-${index}`}
@@ -3228,7 +3228,9 @@ function App() {
                       fontFamily: "'Cairo', 'Segoe UI', sans-serif",
                       lineHeight: '1.8',
                       fontSize: `${Math.round(fontSize * 0.42)}px`,
-                      transition: 'font-size 0.3s ease'
+                      transition: 'font-size 0.3s ease',
+                      direction: 'rtl',
+                      textAlign: 'center'
                     }}
                   >
                     {line}
