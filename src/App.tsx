@@ -618,7 +618,11 @@ const drawExportCornerSection = (
   maxWidth: number,
   titleSize: number,
   bodySize: number,
-  accent: string
+  accent: string,
+  cardColor: string,
+  textColor: string,
+  textLightColor: string,
+  darkMode: boolean
 ): number => {
   const trimmed = body?.trim();
   if (!trimmed) return 0;
@@ -638,7 +642,7 @@ const drawExportCornerSection = (
 
   ctx.save();
   roundRectPath(ctx, x - boxPadX, y - boxPadY, boxW, boxH, EXPORT_CARD_RADIUS);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+  ctx.fillStyle = darkMode ? rgbaFromHex(cardColor, 0.6) : 'rgba(255, 255, 255, 0.94)';
   ctx.fill();
   ctx.strokeStyle = rgbaFromHex(accent, 0.42);
   ctx.lineWidth = 2;
@@ -670,7 +674,7 @@ const drawExportCornerSection = (
 
   let cursorY = y + titleSize * 1.42;
   ctx.font = `500 ${bodySize}px ${ZIKR_EXPORT_ARABIC_FONT}`;
-  ctx.fillStyle = '#2C2C2E';
+  ctx.fillStyle = darkMode ? textLightColor : '#2C2C2E';
   const lines = wrapCanvasArabicText(ctx, trimmed, maxWidth);
   const lineHeight = bodySize * 1.55;
   for (const textLine of lines) {
@@ -692,14 +696,19 @@ const drawExportMainZikrBlock = (
   blockW: number,
   blockH: number,
   accent: string,
-  repeatCount?: number
+  repeatCount?: number,
+  cardColor?: string,
+  textColor?: string,
+  darkMode?: boolean
 ) => {
+  const isDark = darkMode ?? false;
+
   ctx.save();
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+  ctx.shadowColor = isDark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.1)';
   ctx.shadowBlur = 20;
   ctx.shadowOffsetY = 8;
   roundRectPath(ctx, blockX, blockY, blockW, blockH, EXPORT_CARD_RADIUS);
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = isDark ? (cardColor ?? '#2C2C2E') : '#FFFFFF';
   ctx.fill();
   ctx.restore();
 
@@ -729,7 +738,7 @@ const drawExportMainZikrBlock = (
   ctx.direction = 'rtl';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#121212';
+  ctx.fillStyle = isDark ? (textColor ?? '#E6E1E5') : '#121212';
   ctx.font = `700 ${fontSize}px ${ZIKR_EXPORT_ARABIC_FONT}`;
   const textBlockH = lines.length * lineHeight;
   const zikrStartY = blockY + (blockH - textBlockH) / 2 + lineHeight / 2;
@@ -1715,6 +1724,12 @@ function App() {
     ctx.scale(scale, scale);
 
     const exportAccent = colors.accent;
+    const exportBackground = colors.background;
+    const exportCard = colors.card;
+    const exportText = colors.text;
+    const exportTextLight = colors.textLight;
+    const darkMode = isDarkMode;
+
     const pad = 48;
     const cardR = 36;
     const x0 = pad;
@@ -1729,18 +1744,15 @@ function App() {
     const fadlText = currentZikr.fadl?.trim();
     const sectionBoxExtra = 32;
 
-    const outerGrad = ctx.createLinearGradient(0, 0, 0, height);
-    outerGrad.addColorStop(0, '#F0EDE8');
-    outerGrad.addColorStop(1, '#E8E4DF');
-    ctx.fillStyle = outerGrad;
+    ctx.fillStyle = exportBackground;
     ctx.fillRect(0, 0, width, height);
 
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.14)';
+    ctx.shadowColor = darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.14)';
     ctx.shadowBlur = 40;
     ctx.shadowOffsetY = 16;
     roundRectPath(ctx, x0, y0, w0, h0, cardR);
-    ctx.fillStyle = '#FFFCF8';
+    ctx.fillStyle = exportCard;
     ctx.fill();
     ctx.restore();
 
@@ -1749,8 +1761,8 @@ function App() {
     ctx.clip();
 
     const cardGrad = ctx.createLinearGradient(x0, y0, x0, y0 + h0);
-    cardGrad.addColorStop(0, '#FFFFFF');
-    cardGrad.addColorStop(1, '#FAF7F2');
+    cardGrad.addColorStop(0, exportCard);
+    cardGrad.addColorStop(1, exportCard);
     ctx.fillStyle = cardGrad;
     ctx.fillRect(x0, y0, w0, h0);
 
@@ -1765,7 +1777,7 @@ function App() {
     ctx.font = `normal ${wmSize}px 'Fascinate Inline', 'Madinet Al Bat', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.05)';
     const wmGap = '   ';
     const stepX = ctx.measureText(wm + wmGap).width;
     const stepY = wmSize * 2.35;
@@ -1805,7 +1817,11 @@ function App() {
         contentW,
         sectionTitleSize,
         sectionBodySize,
-        exportAccent
+        exportAccent,
+        exportCard,
+        exportText,
+        exportTextLight,
+        darkMode
       );
       layoutY += drawnH + EXPORT_BLOCK_GAP;
     }
@@ -1837,7 +1853,10 @@ function App() {
       contentW,
       mainBlockH,
       exportAccent,
-      currentZikr.count
+      currentZikr.count,
+      exportCard,
+      exportText,
+      darkMode
     );
 
     layoutY += mainBlockH + EXPORT_BLOCK_GAP;
@@ -1852,7 +1871,11 @@ function App() {
         contentW,
         sectionTitleSize,
         sectionBodySize,
-        exportAccent
+        exportAccent,
+        exportCard,
+        exportText,
+        exportTextLight,
+        darkMode
       );
     }
 
